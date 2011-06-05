@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="WebColumns.GamePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="480" d:DesignWidth="640" xmlns:my="clr-namespace:WebColumns" xmlns:dataInput="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Data.Input">
+
+    <ContentControl IsTabStop="True" Width="640" Height="480">
+        <Grid x:Name="LayoutRoot" Background="#FF719BD6" Width="640" Height="480">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <my:BoardControl Height="420" HorizontalAlignment="Center" x:Name="boardControl" VerticalAlignment="Center" Width="210" Grid.Column="1" IsEnabled="True" MaxWidth="210" MinHeight="420" BorderThickness="2" BorderBrush="#FF0F005F" />
+            <Grid Height="30" HorizontalAlignment="Center" Name="grid1" VerticalAlignment="Top" Width="100" Margin="0,30,0,0" Background="Black">
+                <dataInput:Label Name="label_Score" Foreground="White" Background="Black" FontSize="16" Content="00000000" Padding="5" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Width="Auto" Height="30" VerticalAlignment="Center" />
+            </Grid>
+            <Grid Background="Black" Height="30" HorizontalAlignment="Center" Margin="0,105,0,0" Name="grid2" VerticalAlignment="Top" Width="100">
+                <dataInput:Label Background="Black" Content="0000" FontSize="16" Foreground="White" Height="30" HorizontalAlignment="Center" HorizontalContentAlignment="Center" Name="label_Elements" Padding="5" VerticalAlignment="Center" Width="Auto" />
+            </Grid>
+            <dataInput:Label HorizontalAlignment="Center" Name="label_ScoreText" VerticalAlignment="Top" Content="Punkte" Margin="0,60,0,0" Foreground="White" />
+            <dataInput:Label Content="Elemente" Foreground="White" HorizontalAlignment="Center" Margin="0,135,0,0" Name="label_ElementText" VerticalAlignment="Top" />
+            <Grid Background="Black" Height="30" HorizontalAlignment="Center" Margin="0,180,0,0" Name="grid3" VerticalAlignment="Top" Width="100">
+                <dataInput:Label Background="Black" Content="0" FontSize="16" Foreground="White" Height="30" HorizontalAlignment="Center" HorizontalContentAlignment="Center" Name="label_Level" Padding="5" VerticalAlignment="Center" Width="Auto" />
+            </Grid>
+            <dataInput:Label Content="Stufe" Foreground="White" HorizontalAlignment="Center" Margin="0,210,0,0" Name="label_LevelText" VerticalAlignment="Top" />
+            <Grid Background="#FFC4CEFF" Height="100" HorizontalAlignment="Center" Name="grid4" VerticalAlignment="Top" Width="40" Grid.Column="2" Margin="0,30">
+                <Canvas Height="90" HorizontalAlignment="Left" Margin="5,5,0,0" Name="canvas_preview" VerticalAlignment="Top" Width="30">
+                    <Canvas.Clip>
+                        <RectangleGeometry Rect="0,0,30,90" />
+                    </Canvas.Clip>
+                    <Rectangle Width="60" Height="60">
+                        <Rectangle.Fill>
+                            <ImageBrush ImageSource="/WebColumns;component/images/board_background_red.png" />
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    <Rectangle Width="60" Height="60" Margin="0,60">
+                        <Rectangle.Fill>
+                            <ImageBrush ImageSource="/WebColumns;component/images/board_background_red.png" />
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </Canvas>
+            </Grid>
+        </Grid>
+    </ContentControl>
+</UserControl>

@@ -1,0 +1,7 @@
+<OutOfBrowserSettings ShortName="WebColumns-Anwendung" EnableGPUAcceleration="False" ShowInstallMenuItem="True">
+  <OutOfBrowserSettings.Blurb>Eine WebColumns-Anwendung auf Ihrem Desktop; zu Hause, im Büro oder unterwegs.</OutOfBrowserSettings.Blurb>
+  <OutOfBrowserSettings.WindowSettings>
+    <WindowSettings Title="WebColumns-Anwendung" />
+  </OutOfBrowserSettings.WindowSettings>
+  <OutOfBrowserSettings.Icons />
+</OutOfBrowserSettings>
