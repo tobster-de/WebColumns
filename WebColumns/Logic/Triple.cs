@@ -49,7 +49,7 @@ namespace WebColumns.Logic
             for (int i = 0; i < 3; i++)
             {
                 ElementColor col = (ElementColor)_random.Next(5);
-                t._elements.Add(new Element(col, BoardControl.TILESIZE * 4, i * BoardControl.TILESIZE - 90));
+                t._elements.Add(new Element(col, BoardControl.TILESIZE * 3, i * BoardControl.TILESIZE - 90));
             }
             return t;
         }

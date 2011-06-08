@@ -31,7 +31,7 @@ namespace WebColumns
         {
             InitializeComponent();
 
-            //boardControl.Board.OnScoreChanged += new Logic.ScoreChanged(Board_OnScoreChanged);
+            boardControl.Board.OnScoreChanged += new Logic.ScoreChanged(Board_OnScoreChanged);
             boardControl.Board.OnNewPreviewAvailable += new Logic.NewPreviewAvailable(Board_OnNewPreviewAvailable);
 
             this.KeyDown += new KeyEventHandler(GamePage_KeyDown);
@@ -87,7 +87,7 @@ namespace WebColumns
             if (e.Key == Key.Down) _down = false;
             if (e.Key == Key.Up)
             {
-                boardControl.TestImage();
+                
             }
         }
 

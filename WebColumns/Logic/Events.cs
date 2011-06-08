@@ -9,4 +9,6 @@ namespace WebColumns.Logic
     public delegate void ElementsAdded(List<Element> elements);
 
     public delegate void ElementsRemoved(List<Element> elements);
+
+    public delegate void ElementsMoved(List<Element> elements);
 }

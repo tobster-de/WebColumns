@@ -10,6 +10,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Collections.Generic;
 using System.Threading;
+using System.Diagnostics;
 
 namespace WebColumns.Logic
 {
@@ -34,6 +35,11 @@ namespace WebColumns.Logic
         /// Event, wenn Elemente entfernt werden
         /// </summary>
         public event ElementsRemoved OnElementsRemoved;
+
+        /// <summary>
+        /// Event, wenn Elemente bewegt werden
+        /// </summary>
+        public event ElementsMoved OnElementsMoved;
 
         private List<Element> _elements = new List<Element>();
         private List<Element> _moveElements = new List<Element>();
@@ -96,6 +102,7 @@ namespace WebColumns.Logic
         /// <param name="o"></param>
         private void TimerEvent(object o)
         {
+            //Debug.WriteLine("Timer " + DateTime.Now);
             switch (_mode)
             {
                 case BoardMode.ElementMove:
@@ -187,6 +194,7 @@ namespace WebColumns.Logic
         public void MoveElements(int dx, int dy)
         {
             if (_mode != BoardMode.ElementMove) return;
+            if (OnElementsMoved != null) OnElementsMoved(_moveElements);
             for (int i = _moveElements.Count - 1; i >= 0; i--)
             {
                 Element elem = _moveElements[i];
@@ -234,6 +242,7 @@ namespace WebColumns.Logic
             {
                 Point loc = elem.Location;
                 if (loc.X == lx && loc.Y == ly) return true;
+                if (ly == 15) return true;
             }
             return false;
         }

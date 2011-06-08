@@ -17,16 +17,6 @@ namespace WebColumns.Logic
     {
         private ElementColor _color;
         private Point _position;
-        //private Image _image;
-
-        ///// <summary>
-        ///// Anzeigebild
-        ///// </summary>
-        //public Image Image
-        //{
-        //    get { return _image; }
-        //    private set { _image = value; }
-        //}
 
         /// <summary>
         /// Farbe des Elements
@@ -82,8 +72,6 @@ namespace WebColumns.Logic
         {
             _position.X += dx;
             _position.Y += dy;
-            //_image.SetValue(Canvas.LeftProperty, _position.X);
-            //_image.SetValue(Canvas.TopProperty, _position.Y);
         }
     }
 }

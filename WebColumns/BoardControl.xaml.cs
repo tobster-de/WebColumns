@@ -19,7 +19,7 @@ namespace WebColumns
     public partial class BoardControl : UserControl
     {
         private static String BACKGROUND = "images/board_background_red.png";
-        public static int TILESIZE = 60;
+        public static int TILESIZE = 30;
 
         private Dictionary<Element, Image> _elementMap = new Dictionary<Element, Image>();
 
@@ -36,36 +36,45 @@ namespace WebColumns
             InitializeComponent();
 
             BackGoundImages();
+
             _board = new Board();
-            //_board.OnElementsAdded += new ElementsAdded(BoardElementsAdded);
-            //_board.OnElementsRemoved += new ElementsRemoved(BoardElementsRemoved);
+            _board.OnElementsAdded += new ElementsAdded(BoardElementsAdded);
+            _board.OnElementsRemoved += new ElementsRemoved(BoardElementsRemoved);
+            _board.OnElementsMoved += new ElementsMoved(BoardElementsMoved);
             this.Loaded += new RoutedEventHandler(delegate(object sender, RoutedEventArgs e)
                 {
-                    Dispatcher.BeginInvoke(delegate()
-                    {
-                        _board.Init();
-                    });
+                    //Dispatcher.BeginInvoke(delegate()
+                    //{
+                    _board.Init();
+                    //});
                 });
         }
 
-        public void TestImage()
+        void BoardElementsMoved(List<Element> elements)
         {
-            Debug.WriteLine("TestImage");
-            Image image = new Image();
-            image.Source = new BitmapImage(new Uri("images/elemBlue.png", UriKind.Relative));
-            image.Width = 30;
-            image.Height = 30;
-            image.SetValue(Canvas.LeftProperty, (double)90);
-            image.SetValue(Canvas.TopProperty, (double)30);
-            canvas.Children.Add(image);
-            Debug.WriteLine("/TestImage");
-        }
+            canvas.Dispatcher.BeginInvoke(delegate()
+            {
+                Debug.WriteLine("move elements " + elements.Count);
+                foreach (Element elem in elements)
+                {
+                    if (!_elementMap.ContainsKey(elem)) continue;
 
+                    Image image = _elementMap[elem];
+                    if (image != null && canvas.Children.Contains(image))
+                    {
+                        image.SetValue(Canvas.LeftProperty, elem.Position.X);
+                        image.SetValue(Canvas.TopProperty, elem.Position.Y);
+                    }
+                }
+                canvas.InvalidateArrange();
+            });
+        }
 
         void BoardElementsRemoved(List<Element> elements)
         {
             canvas.Dispatcher.BeginInvoke(delegate()
             {
+                Debug.WriteLine("remove elements " + elements.Count);
                 foreach (Element elem in elements)
                 {
                     if (!_elementMap.ContainsKey(elem)) continue;
@@ -81,8 +90,10 @@ namespace WebColumns
         {
             canvas.Dispatcher.BeginInvoke(delegate()
             {
+                Debug.WriteLine("create elements " + elements.Count);
                 foreach (Element elem in elements)
                 {
+                    //Debug.WriteLine(String.Format("images/elem{0}.png", elem.Color.ToString()));
                     Image image = new Image();
                     image.Source = new BitmapImage(new Uri(String.Format("images/elem{0}.png", elem.Color.ToString()), UriKind.Relative));
                     image.Width = 30;
@@ -93,7 +104,6 @@ namespace WebColumns
 
                     canvas.Children.Add(image);
                 }
-
             });
         }
 
@@ -107,11 +117,11 @@ namespace WebColumns
                 for (int j = 0; j < mj; j++)
                 {
                     Rectangle r = new Rectangle();
-                    r.Width = TILESIZE;
-                    r.Height = TILESIZE;
+                    r.Width = TILESIZE * 2;
+                    r.Height = TILESIZE * 2;
                     r.Fill = image;
-                    r.SetValue(Canvas.LeftProperty, (double)i * TILESIZE);
-                    r.SetValue(Canvas.TopProperty, (double)j * TILESIZE);
+                    r.SetValue(Canvas.LeftProperty, (double)i * TILESIZE * 2);
+                    r.SetValue(Canvas.TopProperty, (double)j * TILESIZE * 2);
                     canvas.Children.Add(r);
                 }
             RectangleGeometry rg = new RectangleGeometry();
@@ -158,17 +168,3 @@ namespace WebColumns
         //}
     }
 }
-
-/*
-    <Grid x:Name="LayoutRoot" ShowGridLines="False" Background="Black">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-    </Grid>
-*/
