@@ -21,7 +21,7 @@ namespace WebColumns.Logic
     {
         ElementMove,
         LinkChecking,
-        CheckingMove
+        //CheckingMove
     }
 
 }

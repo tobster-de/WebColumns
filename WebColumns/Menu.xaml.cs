@@ -69,11 +69,6 @@ namespace WebColumns
                 double dx = Math.Abs(e.GetPosition(this).X - ((double)image.GetValue(Canvas.LeftProperty) + image.Width / 2));
                 double dy = Math.Abs(e.GetPosition(this).Y - ((double)image.GetValue(Canvas.TopProperty) + image.Height / 2));
                 double dist = Math.Sqrt(dx * dx + dy * dy);
-
-                if (dist < IMAGE_WIDTH)
-                {
-                    //(this.Parent as PageSwitch).Navigate(new GamePage());
-                }
             }            
         }
 

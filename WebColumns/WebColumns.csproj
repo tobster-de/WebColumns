@@ -100,6 +100,7 @@
     <Compile Include="Logic\Element.cs" />
     <Compile Include="Logic\Enumerations.cs" />
     <Compile Include="Logic\Events.cs" />
+    <Compile Include="Logic\Location.cs" />
     <Compile Include="Logic\Triple.cs" />
     <Compile Include="LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>

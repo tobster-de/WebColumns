@@ -16,7 +16,7 @@ namespace WebColumns.Logic
     public class Element
     {
         private ElementColor _color;
-        private Point _position;
+        private Location _location;
 
         /// <summary>
         /// Farbe des Elements
@@ -31,23 +31,17 @@ namespace WebColumns.Logic
         }
 
         /// <summary>
-        /// Position des Elements (in Pixeln)
-        /// </summary>
-        public Point Position
-        {
-            get { return _position; }
-            private set { _position = value; }
-        }
-
-        /// <summary>
         /// Position des Elements (in Sektoren)
         /// </summary>
-        public Point Location
+        public Location Location
         {
             get
             {
-                return new Point((_position.X + BoardControl.TILESIZE / 2) / BoardControl.TILESIZE,
-                    (_position.Y + BoardControl.TILESIZE / 2) / BoardControl.TILESIZE);
+                return new Location(_location.X, _location.Y);
+            }
+            set
+            {
+                _location = new Location(value.X, value.Y);
             }
         }
 
@@ -59,7 +53,7 @@ namespace WebColumns.Logic
         /// <param name="y">Position Y-Koodinate</param>
         public Element(ElementColor color, int x, int y)
         {
-            _position = new Point(x, y);
+            _location = new Location(x, y);
             Color = color;
         }
 
@@ -70,8 +64,16 @@ namespace WebColumns.Logic
         /// <param name="dy">Änderung der Y-Koordinate</param>
         internal void Move(int dx, int dy)
         {
-            _position.X += dx;
-            _position.Y += dy;
+            int cx = (int)_location.X + dx;
+            int cy = (int)_location.Y + dy;
+            if (cx < 0 || cx > 6 || cy > 14) return;
+            _location.X += dx;
+            _location.Y += dy;
+        }
+
+        public override string ToString()
+        {
+            return Color.ToString() + " Element at " + (int)Location.X + "/" + (int)Location.Y;
         }
     }
 }

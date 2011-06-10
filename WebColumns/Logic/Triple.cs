@@ -49,7 +49,7 @@ namespace WebColumns.Logic
             for (int i = 0; i < 3; i++)
             {
                 ElementColor col = (ElementColor)_random.Next(5);
-                t._elements.Add(new Element(col, BoardControl.TILESIZE * 3, i * BoardControl.TILESIZE - 90));
+                t._elements.Add(new Element(col, 3, i));
             }
             return t;
         }
@@ -59,14 +59,14 @@ namespace WebColumns.Logic
         /// </summary>
         private Triple() { }
 
-        /// <summary>
-        /// Reihenfolge der Elemente ändern
-        /// </summary>
-        public void Toggle()
-        {
-            _elements.Add(_elements[0]);
-            _elements.RemoveAt(0);
-        }
+        ///// <summary>
+        ///// Reihenfolge der Elemente ändern
+        ///// </summary>
+        //public void Toggle()
+        //{
+        //    _elements.Add(_elements[0]);
+        //    _elements.RemoveAt(0);
+        //}
 
         /// <summary>
         /// Bewegen

@@ -43,6 +43,8 @@
                     </Rectangle>
                 </Canvas>
             </Grid>
+            <Button Content="Fortsetzen" Height="23" HorizontalAlignment="Center" Name="button_Resume" VerticalAlignment="Bottom" Width="75" Margin="0,0,0,40" IsEnabled="False" Click="button_Resume_Click" />
+            <Button Content="Pause" Height="23" HorizontalAlignment="Center" Margin="70,0,70,69" Name="button_Pause" VerticalAlignment="Bottom" Width="75" IsEnabled="True" Click="button_Pause_Click" />
         </Grid>
     </ContentControl>
 </UserControl>

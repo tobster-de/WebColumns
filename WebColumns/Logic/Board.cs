@@ -11,11 +11,15 @@ using System.Windows.Shapes;
 using System.Collections.Generic;
 using System.Threading;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace WebColumns.Logic
 {
     public class Board
     {
+        const int SIZEX = 7;
+        const int SIZEY = 14;
+
         /// <summary>
         /// Event, wenn ein neues Vorschautripel angezeigt werden soll
         /// </summary>
@@ -43,23 +47,32 @@ namespace WebColumns.Logic
 
         private List<Element> _elements = new List<Element>();
         private List<Element> _moveElements = new List<Element>();
-        private List<Element> _checkElements = new List<Element>();
+        //private List<Element> _checkElements = new List<Element>();
         private Triple _currentTriple;
         private Triple _previewTriple;
         private BoardMode _mode;
 
-        private int _score = 0;
-        private int _linkedCount = 0;
-        private int _level = 0;
+        private int _score = 0;             // Punktezahl
+        private int _linkedCount = 0;       // Anzahl eleminierte Elemente
+        private int _level = 0;             // Spielstufe (_linked div 50)
+        private int _linkChain = 0;         // Stufe der Kettenreaktion 
 
         private Timer _timer;
+
+
+        /// <summary>
+        /// Aktueller Arbeitsmodus
+        /// </summary>
+        public BoardMode Mode
+        {
+            get { return _mode; }
+            private set { _mode = value; }
+        }
 
         /// <summary>
         /// Konstruktor
         /// </summary>
-        public Board()
-        {
-        }
+        public Board() { }
 
         #region Public Methoden
 
@@ -72,7 +85,7 @@ namespace WebColumns.Logic
             _previewTriple = Triple.GenerateRandomTriple();
             GenerateNewTriple();
 
-            _timer = new Timer(new System.Threading.TimerCallback(TimerEvent), null, 0, 100);
+            _timer = new Timer(new System.Threading.TimerCallback(TimerEvent), null, 0, 500);
         }
 
         /// <summary>
@@ -89,7 +102,49 @@ namespace WebColumns.Logic
         /// </summary>
         public void StopTimer()
         {
-            _timer.Change(0, Timeout.Infinite);
+            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+        }
+
+        /// <summary>
+        /// Aktuelles Tripel togglen
+        /// </summary>
+        /// 
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void ToggleTriple()
+        {
+            Debug.WriteLine("toggle");
+            Location loc = _currentTriple[0].Location;
+            _currentTriple[0].Location = _currentTriple[1].Location;
+            _currentTriple[1].Location = _currentTriple[2].Location;
+            _currentTriple[2].Location = loc;
+            if (OnElementsMoved != null) OnElementsMoved(_currentTriple.Elements);
+        }
+
+        /// <summary>
+        /// Aktuelles Tripel ein Feld nach unten bewegen
+        /// </summary>
+        public void DropTriple()
+        {
+            if (_mode != BoardMode.ElementMove) return;
+            MoveElements(0, 1);
+        }
+
+        /// <summary>
+        /// Aktuelles Tripel ein Feld nach links bewesen
+        /// </summary>
+        public void MoveTripleLeft()
+        {
+            if (_mode != BoardMode.ElementMove) return;
+            MoveElements(-1, 0);
+        }
+
+        /// <summary>
+        /// Aktuelles Tripel ein Feld nach rechts bewegen
+        /// </summary>
+        public void MoveTripleRight()
+        {
+            if (_mode != BoardMode.ElementMove) return;
+            MoveElements(1, 0);
         }
 
         #endregion
@@ -102,17 +157,17 @@ namespace WebColumns.Logic
         /// <param name="o"></param>
         private void TimerEvent(object o)
         {
-            //Debug.WriteLine("Timer " + DateTime.Now);
+            Debug.WriteLine("timer " + DateTime.Now.Millisecond + " " + _mode);
             switch (_mode)
             {
                 case BoardMode.ElementMove:
-                case BoardMode.CheckingMove:
+                    //case BoardMode.CheckingMove:
                     MoveElements(0, 1);
                     break;
                 case BoardMode.LinkChecking:
                     StopTimer();
                     CheckElementLinks();
-                    ChangeTimer(100);
+                    ChangeTimer(1000);
                     break;
             }
         }
@@ -123,66 +178,81 @@ namespace WebColumns.Logic
         private void CheckElementLinks()
         {
             List<Element> linked = new List<Element>();
+            List<int> checkCols = new List<int>();
 
-            int[] dx = new int[] { -1, +1, +0, +0, -1, +1, -1, +1 };
-            int[] dy = new int[] { +0, +0, -1, +1, -1, -1, +1, +1 };
+            int[] dx = new int[] { -1, 0, 1, 1 };
+            int[] dy = new int[] { 1, 1, 1, 0 };
 
-            foreach (Element elem in _checkElements)
+            foreach (Element elem in _elements)
             {
-                Point loc = elem.Location;
-                int lx = (int)loc.X; int ly = (int)loc.Y;
-                for (int i = 0; i < 7; i++)
+                // alle möglichen Richtungen ausgehen von diesem Element überprüfen 
+                for (int i = 0; i < dx.Length; i++)
                 {
                     List<Element> match = new List<Element>();
-                    int count = RecursiveCheck(elem.Color, lx, ly, dx[i], dy[i], ref match);
+                    int count = RecursiveCheck(elem, dx[i], dy[i], ref match);
                     if (count >= 2)
                     {
-                        linked.AddRange(match);
-                        if (!linked.Contains(elem)) linked.Add(elem);
+                        match.Add(elem);
+                        foreach (Element m in match)
+                            if (!linked.Contains(m)) linked.Add(m);
                     }
                 }
             }
             if (linked.Count > 0)
             {
+                // verbundene Elemente eleminieren
+                List<Element> moved = new List<Element>();
+                _linkChain++;
                 if (OnElementsRemoved != null) OnElementsRemoved(linked);
                 foreach (Element elem in linked)
                 {
                     _elements.Remove(elem);
+                    if (!checkCols.Contains(elem.Location.X)) checkCols.Add(elem.Location.X);
                 }
-            }
-            _checkElements.Clear();
-            // moveElements füllen mit Elementen mit Freiraum darunter
-            _moveElements.Clear();
-            foreach (Element elem in _elements)
-            {
-                Point loc = elem.Location;
-                int cx = (int)loc.X; int cy = (int)loc.Y;
-                if (!LocationBlocked((int)elem.Location.X, (int)elem.Location.Y + 1))
+                // darüber liegende Elemente nachrücken
+                foreach (int x in checkCols)
                 {
-                    for (int i = cy; i >= 0; i--)
+                    for (int y = SIZEY - 1; y >= 0; y--)
                     {
-                        foreach (Element ontop in _elements)
+                        Element elem = ElementAtLocation(x, y);
+                        if (elem != null)
                         {
-                            Point otloc = elem.Location;
-                            int ox = (int)otloc.X; int oy = (int)otloc.Y;
-                            if (ox == cx && oy == i) _moveElements.Add(ontop);
+                            int j = y;
+                            while (!LocationBlocked(elem.Location.X, elem.Location.Y + 1))
+                            {
+                                elem.Move(0, 1);
+                                if (!moved.Contains(elem)) moved.Add(elem);
+                            }
                         }
                     }
                 }
+                if (moved.Count > 0 && OnElementsMoved != null) OnElementsMoved(moved);
+
+                //Punktewertung
+                int roundscore = (linked.Count - 2) * 30 * (_linkChain) * (_level + 1);
+                _score += roundscore;
+                if (_linkedCount / 50 < (_linkedCount + linked.Count) / 50) _level++;
+                _linkedCount += linked.Count;
+                if (OnScoreChanged != null) OnScoreChanged(roundscore, _score, _linkedCount, _level);
             }
-            _mode = BoardMode.CheckingMove;
+            else
+            {
+                _mode = BoardMode.ElementMove;
+                GenerateNewTriple();
+            }
         }
 
-        private int RecursiveCheck(ElementColor color, int lx, int ly, int dx, int dy, ref List<Element> match)
+        private int RecursiveCheck(Element e, int dx, int dy, ref List<Element> match)
         {
+            if (e.Location.X + dx < 0 || e.Location.X + dx >= SIZEX
+                || e.Location.X + dy < 0 || e.Location.Y + dy >= SIZEY) return 0;
             foreach (Element elem in _elements)
             {
-                Point loc = elem.Location;
-                int cx = (int)loc.X; int cy = (int)loc.Y;
-                if (elem.Color == color && cx == lx + dx && cy == ly + dy)
+                Location loc = elem.Location;
+                if (elem.Color == e.Color && loc.X == e.Location.X + dx && loc.Y == e.Location.Y + dy)
                 {
-                    match.Add(elem);
-                    return RecursiveCheck(color, cx, cy, dx, dy, ref match) + 1;
+                    if (!match.Contains(elem)) match.Add(elem);
+                    return RecursiveCheck(elem, dx, dy, ref match) + 1;
                 }
             }
             return 0;
@@ -191,43 +261,68 @@ namespace WebColumns.Logic
         /// <summary>
         /// Bewegt Elemente
         /// </summary>
-        public void MoveElements(int dx, int dy)
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        private void MoveElements(int dx, int dy)
         {
-            if (_mode != BoardMode.ElementMove) return;
-            if (OnElementsMoved != null) OnElementsMoved(_moveElements);
+            _moveElements.Sort(new Comparison<Element>(delegate(Element a, Element b)
+            {
+                return a.Location.Y - b.Location.Y;
+            }));
+            List<Element> _moved = new List<Element>(_moveElements);
             for (int i = _moveElements.Count - 1; i >= 0; i--)
             {
                 Element elem = _moveElements[i];
+                Debug.WriteLine(elem);
                 elem.Move(dx, dy);
-                if (elem.Position.Y % BoardControl.TILESIZE == 0 && LocationBlocked((int)elem.Location.X, (int)elem.Location.Y + 1))
+                if (LocationBlocked(elem.Location.X, elem.Location.Y + 1))
                 {
-                    _checkElements.Add(elem);
+                    //_checkElements.Add(elem);
+                    _elements.Add(elem);
                     _moveElements.RemoveAt(i);
                 }
             }
+            if (OnElementsMoved != null && _moved.Count > 0) OnElementsMoved(_moved);
             if (_moveElements.Count == 0)
             {
                 if (_mode == BoardMode.ElementMove)
                     _mode = BoardMode.LinkChecking;
-                else if (_mode == BoardMode.CheckingMove)
-                {
-                    _mode = BoardMode.ElementMove;
-                    GenerateNewTriple();
-                }
+                //else if (_mode == BoardMode.CheckingMove)
+                //{
+                //    _mode = BoardMode.ElementMove;
+                //    GenerateNewTriple();
+                //}
             }
         }
 
         /// <summary>
-        /// Vorschau-Tripel übernehmen und neues generieren
+        /// Vorschau-Tripel übernehmen und Neues generieren
         /// </summary>
         private void GenerateNewTriple()
         {
+            Debug.WriteLine("generate triple");
+            _linkChain = 0;
             _currentTriple = _previewTriple;
             _previewTriple = Triple.GenerateRandomTriple();
             _moveElements.Clear();  // unnötig?
             _moveElements.AddRange(_currentTriple.Elements);
             if (OnNewPreviewAvailable != null) OnNewPreviewAvailable(_previewTriple);
             if (OnElementsAdded != null) OnElementsAdded(_moveElements);
+        }
+
+        /// <summary>
+        /// Bestimmt das Element an einer bestimmten Stelle
+        /// </summary>
+        /// <param name="loc">Stelle an der das Element bestimmt werden soll</param>
+        /// <returns>Element an gegebener Stelle oder Null</returns>
+        private Element ElementAtLocation(int lx, int ly)
+        {
+            if (lx < 0 || lx >= SIZEX || ly >= SIZEY) return null;
+            foreach (Element elem in _elements)
+            {
+                Location loc = elem.Location;
+                if (loc.X == lx && loc.Y == ly) return elem;
+            }
+            return null;
         }
 
         /// <summary>
@@ -238,11 +333,11 @@ namespace WebColumns.Logic
         /// <returns>True/False</returns>
         private bool LocationBlocked(int lx, int ly)
         {
+            if (lx < 0 || lx >= SIZEX || ly >= SIZEY) return true;
             foreach (Element elem in _elements)
             {
-                Point loc = elem.Location;
+                Location loc = elem.Location;
                 if (loc.X == lx && loc.Y == ly) return true;
-                if (ly == 15) return true;
             }
             return false;
         }

@@ -41,13 +41,10 @@ namespace WebColumns
             _board.OnElementsAdded += new ElementsAdded(BoardElementsAdded);
             _board.OnElementsRemoved += new ElementsRemoved(BoardElementsRemoved);
             _board.OnElementsMoved += new ElementsMoved(BoardElementsMoved);
-            this.Loaded += new RoutedEventHandler(delegate(object sender, RoutedEventArgs e)
-                {
-                    //Dispatcher.BeginInvoke(delegate()
-                    //{
-                    _board.Init();
-                    //});
-                });
+            //this.Loaded += new RoutedEventHandler(delegate(object sender, RoutedEventArgs e)
+            //    {
+            //        _board.Init();
+            //    });
         }
 
         void BoardElementsMoved(List<Element> elements)
@@ -60,13 +57,22 @@ namespace WebColumns
                     if (!_elementMap.ContainsKey(elem)) continue;
 
                     Image image = _elementMap[elem];
+                    /*
+                    DoubleAnimation ani = new DoubleAnimation();
+                    ani.From = 0;
+                    ani.To = 0;
+
+                    Storyboard sb = new Storyboard();
+                    sb.Children.Add(ani);
+                    Storyboard.SetTarget(ani, image);
+                    Storyboard.SetTargetProperty(ani, new PropertyPath("(Canvas.Left)"));
+                    */
                     if (image != null && canvas.Children.Contains(image))
                     {
-                        image.SetValue(Canvas.LeftProperty, elem.Position.X);
-                        image.SetValue(Canvas.TopProperty, elem.Position.Y);
+                        image.SetValue(Canvas.LeftProperty, (double)elem.Location.X * TILESIZE);
+                        image.SetValue(Canvas.TopProperty, (double)elem.Location.Y * TILESIZE);
                     }
                 }
-                canvas.InvalidateArrange();
             });
         }
 
@@ -96,10 +102,10 @@ namespace WebColumns
                     //Debug.WriteLine(String.Format("images/elem{0}.png", elem.Color.ToString()));
                     Image image = new Image();
                     image.Source = new BitmapImage(new Uri(String.Format("images/elem{0}.png", elem.Color.ToString()), UriKind.Relative));
-                    image.Width = 30;
-                    image.Height = 30;
-                    image.SetValue(Canvas.LeftProperty, elem.Position.X);
-                    image.SetValue(Canvas.TopProperty, elem.Position.Y);
+                    image.Width = TILESIZE;
+                    image.Height = TILESIZE;
+                    image.SetValue(Canvas.LeftProperty, (double)elem.Location.X * TILESIZE);
+                    image.SetValue(Canvas.TopProperty, (double)elem.Location.Y * TILESIZE);
                     _elementMap.Add(elem, image);
 
                     canvas.Children.Add(image);
